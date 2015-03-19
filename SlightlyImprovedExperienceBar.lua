@@ -2,9 +2,10 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.14"
+SIEB.version = "2.15"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
+SIEB.championPointsMax = 400000
 SIEB.defaults = {
 	minimumAlpha = 0.8,
 	showPercentageText = true,
@@ -153,7 +154,15 @@ function SIEB.SetLabelPosition()
 		SIEB.experienceLabel:ClearAnchors()
 		SIEB.experienceLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, 0, -22)
 	end
+
+	if not SIEB.championLabel then
+		SIEB.championLabel = SIEB.NewBarLabel("SIEB_ChampionBarLabel", ZO_PlayerProgressBar, TEXT_ALIGN_CENTER)
+	end
 	
+	SIEB.championLabel:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
+	SIEB.championLabel:ClearAnchors()
+	SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, 30)
+
 end
 
 -- Initializer functions that runs once when the game is loading addons
@@ -247,6 +256,9 @@ end
 function SIEB.RefreshLabel()
 
 	SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+	if IsUnitVeteran("player") then
+		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.championPointsMax))
+	end
 
 end
 

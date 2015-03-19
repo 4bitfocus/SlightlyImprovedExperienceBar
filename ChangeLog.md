@@ -1,5 +1,9 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.15
+* Updated LibAddonMenu to version 2.0 r17
+* Added initial support for Champion XP
+
 ## Version 2.14
 * Updated LibAddonMenu to version 2.0 r16
 
