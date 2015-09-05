@@ -2,10 +2,11 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.15"
+SIEB.version = "2.16"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 SIEB.championPointsMax = 400000
+SIEB.veteranRankMax = 14
 SIEB.defaults = {
 	minimumAlpha = 0.8,
 	showPercentageText = true,
@@ -155,13 +156,15 @@ function SIEB.SetLabelPosition()
 		SIEB.experienceLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, 0, -22)
 	end
 
-	if not SIEB.championLabel then
-		SIEB.championLabel = SIEB.NewBarLabel("SIEB_ChampionBarLabel", ZO_PlayerProgressBar, TEXT_ALIGN_CENTER)
+  -- Only show the champion numbers for veteran players
+	if IsUnitVeteran("player") and not SIEB.championLabel then
+		SIEB.championLabel = SIEB.NewBarLabel("SIEB_ChampionBarLabel", ZO_PlayerProgressBar, TEXT_ALIGN_RIGHT)
 	end
-	
-	SIEB.championLabel:SetHorizontalAlignment(TEXT_ALIGN_RIGHT)
-	SIEB.championLabel:ClearAnchors()
-	SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, 30)
+
+  if SIEB.championLabel then
+    SIEB.championLabel:ClearAnchors()
+    SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, 25)
+  end
 
 end
 
@@ -255,8 +258,14 @@ end
 -- Manual refresh of the label values
 function SIEB.RefreshLabel()
 
-	SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
-	if IsUnitVeteran("player") then
+  -- Hide the experience numbers for players that are max veteran rank
+  if GetUnitVeteranRank("player") >= SIEB.veteranRankMax then
+  	SIEB.experienceLabel:SetText("")
+  else
+  	SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+  end
+
+  if SIEB.championLabel then
 		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.championPointsMax))
 	end
 

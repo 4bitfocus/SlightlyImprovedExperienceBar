@@ -1,5 +1,10 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.16
+* Updated LibAddonMenu to version 2.0 r18
+* Updated LibStub to version 1.0 r4
+* Hide current/maximum text when at veteran rank 14
+
 ## Version 2.15
 * Updated LibAddonMenu to version 2.0 r17
 * Added initial support for Champion XP
