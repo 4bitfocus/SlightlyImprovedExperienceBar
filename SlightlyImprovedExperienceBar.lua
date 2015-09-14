@@ -2,7 +2,7 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.16"
+SIEB.version = "2.17"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 SIEB.championPointsMax = 400000

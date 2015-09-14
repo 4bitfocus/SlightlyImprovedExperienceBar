@@ -1,5 +1,8 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.17
+* Updated the API version number
+
 ## Version 2.16
 * Updated LibAddonMenu to version 2.0 r18
 * Updated LibStub to version 1.0 r4
