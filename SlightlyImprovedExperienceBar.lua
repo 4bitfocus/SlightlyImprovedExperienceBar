@@ -6,7 +6,6 @@ SIEB.version = "2.18"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 SIEB.championPointsMax = 400000
-SIEB.veteranRankMax = 14
 SIEB.defaults = {
 	minimumAlpha = 0.8,
 	showPercentageText = true,
@@ -142,10 +141,7 @@ end
 
 function SIEB.GetPlayerChampionXPMax()
 
-	CPoints = GetPlayerChampionPointsEarned()
-	CExpMax = GetChampionXPInRank(CPoints)
-	
-	return CExpMax
+	return GetChampionXPInRank(GetPlayerChampionPointsEarned())
 	
 end
 
@@ -182,9 +178,6 @@ function SIEB.Initialize(eventCode, addOnName)
 
 	-- Only initialize our own addon
 	if SIEB.name ~= addOnName then return end
-
-	-- Query the API for the max veteran rank
-	SIEB.veteranRankMax = GetMaxVeteranRank()
 
 	-- Load the saved variables
 	SIEB.vars = ZO_SavedVars:NewAccountWide("SIEBVars", SIEB.configVersion, nil, SIEB.defaults)
@@ -270,15 +263,15 @@ end
 -- Manual refresh of the label values
 function SIEB.RefreshLabel()
 
-  -- Hide the experience numbers for players that are max veteran rank
-  if GetUnitVeteranRank("player") >= SIEB.veteranRankMax then
-  	SIEB.experienceLabel:SetText("")
-  else
-  	SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
-  end
+    -- Hide the experience numbers for players that are max veteran rank
+    if GetUnitVeteranRank("player") >= GetMaxVeteranRank() then
+        SIEB.experienceLabel:SetText("")
+    else
+        SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+    end
 
-  if SIEB.championLabel then
-		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
+    if SIEB.championLabel then
+        SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
 	end
 
 end
