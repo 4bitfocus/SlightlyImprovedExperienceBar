@@ -1,5 +1,9 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.18
+* Fixed display issue with maximum champion xp
+* Updated the API version number
+
 ## Version 2.17
 * Updated the API version number
 
