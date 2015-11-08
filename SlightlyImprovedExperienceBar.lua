@@ -2,7 +2,7 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.17"
+SIEB.version = "2.18"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 SIEB.championPointsMax = 400000
@@ -140,6 +140,15 @@ function SIEB.GetPlayerXPMax()
 
 end
 
+function SIEB.GetPlayerChampionXPMax()
+
+	CPoints = GetPlayerChampionPointsEarned()
+	CExpMax = GetChampionXPInRank(CPoints)
+	
+	return CExpMax
+	
+end
+
 function SIEB.SetLabelPosition()
 	
 	if not SIEB.experienceLabel then
@@ -173,6 +182,9 @@ function SIEB.Initialize(eventCode, addOnName)
 
 	-- Only initialize our own addon
 	if SIEB.name ~= addOnName then return end
+
+	-- Query the API for the max veteran rank
+	SIEB.veteranRankMax = GetMaxVeteranRank()
 
 	-- Load the saved variables
 	SIEB.vars = ZO_SavedVars:NewAccountWide("SIEBVars", SIEB.configVersion, nil, SIEB.defaults)
@@ -266,7 +278,7 @@ function SIEB.RefreshLabel()
   end
 
   if SIEB.championLabel then
-		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.championPointsMax))
+		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
 	end
 
 end
