@@ -2,7 +2,9 @@
 
 ## Version 2.19
 * Converted from Veteran Ranks to Champion Points
+* Fixed label position option for xp text so that it can optionally show below the bar
 * Updated the API version number
+* Updated LibAddonMenu to version 2.0 r20
 
 ## Version 2.18
 * Fixed display issue with maximum champion xp

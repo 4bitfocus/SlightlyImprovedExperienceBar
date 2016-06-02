@@ -1,26 +1,14 @@
 ## Title: Slightly Improved Experience Bar
-
 ## Description: Adds numerical values to the experience bar and prevents it from auto hiding.
-
 ## APIVersion: 100015
-
+## OptionalDependsOn: LibAddonMenu-2.0 Azurah
 ## SavedVariables: SIEBVars
 
 Libs/LibStub/LibStub.lua
-
-## OptionalDependsOn: LibAddonMenu-2.0 Azurah
-
-
 Libs/LibAddonMenu-2.0/LibAddonMenu-2.0.lua
-
 Libs/LibAddonMenu-2.0/controls/panel.lua
-
 Libs/LibAddonMenu-2.0/controls/checkbox.lua
-
 Libs/LibAddonMenu-2.0/controls/slider.lua
-
 Libs/LibAnimation-1.0/LibAnimation.lua
-
-
 
 SlightlyImprovedExperienceBar.lua
