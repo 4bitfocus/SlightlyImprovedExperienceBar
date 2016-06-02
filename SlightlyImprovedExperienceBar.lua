@@ -2,17 +2,16 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.18"
+SIEB.version = "2.19"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
-SIEB.championPointsMax = 400000
-SIEB.veteranRankMax = 14
+SIEB.championPointsMax = 360000
 SIEB.defaults = {
 	minimumAlpha = 0.8,
 	showPercentageText = true,
 	showCurrentMaxText = true,
 	showDuringDialog = false,
-	showExpAsVeteran = false,
+	showExpAsChampion = false,
 	flashGainDuration = 6,
 	showLabelBelow = true,
 }
@@ -36,18 +35,18 @@ function SIEB.CreateConfiguration()
 
 	local LAM = LibStub("LibAddonMenu-2.0")
 
-	local panelData = {
+	panelData = {
 		type = "panel",
 		name = "Experience Bar",
 		displayName = "Slightly Improved Experience Bar",
-		author = "L8Knight",
+		author = "L8Knight+Shadowfen",
 		version = SIEB.version,
 		registerForDefaults = true,
 	}
 
 	LAM:RegisterAddonPanel(SIEB.name.."Config", panelData)
 
-	local controlData = {
+	controlData = {
 		[1] = {
 			type = "slider",
 			name = "Transparency",
@@ -92,10 +91,10 @@ function SIEB.CreateConfiguration()
 		[6] = {
 			type = "checkbox",
 			name = "Always Show Leveling Exp",
-			tooltip = "Continue to show regular experience values even after hitting veteran status",
-			getFunc = function() return SIEB.vars.showExpAsVeteran end,
-			setFunc = function(newValue) SIEB.vars.showExpAsVeteran = newValue; SIEB.RefreshLabel() end,
-			default = SIEB.defaults.showExpAsVeteran,
+			tooltip = "Continue to show regular experience values even after hitting Champion status",
+			getFunc = function() return SIEB.vars.showExpAsChampion end,
+			setFunc = function(newValue) SIEB.vars.showExpAsChampion = newValue; SIEB.RefreshLabel() end,
+			default = SIEB.defaults.showExpAsChampion,
 		},
 		[7] = {
 			type = "slider",
@@ -122,8 +121,8 @@ end
 
 function SIEB.GetPlayerXP()
 
-	if IsUnitVeteran("player") and SIEB.vars.showExpAsVeteran == false then
-		return GetUnitVeteranPoints("player")
+	if IsUnitChampion("player") and SIEB.vars.showExpAsChampion == false then
+		return GetPlayerChampionXP()
 	else
 		return GetUnitXP("player")
 	end
@@ -132,8 +131,8 @@ end
 
 function SIEB.GetPlayerXPMax()
 
-	if IsUnitVeteran("player") and SIEB.vars.showExpAsVeteran == false then
-		return GetUnitVeteranPointsMax("player")
+	if IsUnitChampion("player") and SIEB.vars.showExpAsChampion == false then
+		return GetNumChampionXPInChampionPoint(GetUnitChampionPoints("player"))
 	else
 		return GetUnitXPMax("player")
 	end
@@ -142,10 +141,7 @@ end
 
 function SIEB.GetPlayerChampionXPMax()
 
-	CPoints = GetPlayerChampionPointsEarned()
-	CExpMax = GetChampionXPInRank(CPoints)
-	
-	return CExpMax
+	return GetNumChampionXPInChampionPoint(GetChampionPointsPlayerProgressionCap("player"))
 	
 end
 
@@ -165,8 +161,8 @@ function SIEB.SetLabelPosition()
 		SIEB.experienceLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, 0, -22)
 	end
 
-  -- Only show the champion numbers for veteran players
-	if IsUnitVeteran("player") and not SIEB.championLabel then
+  -- Only show the champion numbers for Champion players
+	if IsUnitChampion("player") and not SIEB.championLabel then
 		SIEB.championLabel = SIEB.NewBarLabel("SIEB_ChampionBarLabel", ZO_PlayerProgressBar, TEXT_ALIGN_RIGHT)
 	end
 
@@ -177,14 +173,121 @@ function SIEB.SetLabelPosition()
 
 end
 
+function SIEB.ExperienceBarOnUpdate()
+
+	-- Use the OnUpdate event to make sure the alpha value is correct. The alpha
+	-- value cannot be set during the OnShow event.
+	ZO_PlayerProgressBar:SetAlpha(SIEB.vars.minimumAlpha)
+
+end
+
+function SIEB.OnExperienceGain(eventCode, reason, level, prevExp, curExp)
+
+	-- Ignore the incoming values since the player can still gain experience points
+	-- after they hit level 50. Instead, use the event as "some exp/vet point change
+	-- happened" and update the label with the value the player wants to see.
+	SIEB.RefreshLabel()
+	SIEB.FlashGain()
+
+end
+
+function SIEB.UpdateInteractiveScene()
+
+	if SIEB.vars.showDuringDialog then
+		SCENE_MANAGER:GetScene("interact"):AddFragment(PLAYER_PROGRESS_BAR_FRAGMENT)
+		SCENE_MANAGER:GetScene("interact"):AddFragment(PLAYER_PROGRESS_BAR_CURRENT_FRAGMENT)
+	else
+		SCENE_MANAGER:GetScene("interact"):RemoveFragment(PLAYER_PROGRESS_BAR_FRAGMENT)
+		SCENE_MANAGER:GetScene("interact"):RemoveFragment(PLAYER_PROGRESS_BAR_CURRENT_FRAGMENT)
+	end
+
+end
+
+-- Manual refresh of the label values
+function SIEB.RefreshLabel()
+
+    -- Hide the experience numbers for players that are max Champion rank
+    if GetUnitChampionPoints("player") >= GetChampionPointsPlayerProgressionCap() then
+        SIEB.experienceLabel:SetText("")
+    else
+        SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+    end
+
+    if SIEB.championLabel then
+        SIEB.championLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerChampionXPMax()))
+	end
+
+end
+
+-- Callback for the experience update event
+function SIEB.OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason)
+
+	if unitTag ~= "player" then return end
+
+	-- Ignore the incoming values since the player can still gain experience points
+	-- after they hit level 50. Instead, use the event as "some exp/vet point change happened"
+	-- and update the label with the value the player wants to see.
+
+	SIEB.RefreshLabel()
+	SIEB.FlashGain()
+
+end
+
+-- Flash the amount of xp just gained below the bar
+function SIEB.FlashGain()
+
+	local diff = SIEB.GetPlayerXP() - SIEB.lastXPValue
+	if diff ~= 0 and SIEB.vars.flashGainDuration ~= 0 then
+		local direction = ""
+		if diff > 0 then direction = "+" end
+		SIEB.flashLabel:SetText(direction..diff)
+		SIEB.flashLabel:SetAlpha(1.0)
+		SIEB.lastXPValue = SIEB.GetPlayerXP()
+		SIEB.flashAnimation:Play()
+	end
+
+end
+
+-- Create the label string based on user preferences
+function SIEB.FormatLabelText(current, max)
+
+	local percent = 0
+	if max > 0 then
+		percent = math.floor((current/max) * 100)
+	else
+		max = "MAX"
+	end
+
+	local str = ""
+	
+	-- Shorten the Champion exp display so it fits on the same line
+	if IsUnitChampion("player") and SIEB.vars.showExpAsChampion == false and SIEB.vars.showLabelBelow == false then
+		current = math.ceil(current / 1000) .. "k"
+		max = math.ceil(max / 1000) .. "k"
+	end
+
+	-- Append the "current/maximum" text if configured
+	if SIEB.vars.showCurrentMaxText then
+		str = str .. current .. " / " .. max
+	end
+
+	-- Append the percentage text if configured
+	if SIEB.vars.showPercentageText then
+		if SIEB.vars.showCurrentMaxText then
+			str = str .. "  "
+		end
+		str = str .. percent .. "%"
+	end
+
+	return str
+
+end
+
 -- Initializer functions that runs once when the game is loading addons
 function SIEB.Initialize(eventCode, addOnName)
 
 	-- Only initialize our own addon
 	if SIEB.name ~= addOnName then return end
-
-	-- Query the API for the max veteran rank
-	SIEB.veteranRankMax = GetMaxVeteranRank()
 
 	-- Load the saved variables
 	SIEB.vars = ZO_SavedVars:NewAccountWide("SIEBVars", SIEB.configVersion, nil, SIEB.defaults)
@@ -219,119 +322,10 @@ function SIEB.Initialize(eventCode, addOnName)
 	
 	-- Register for future experience updates
 	EVENT_MANAGER:RegisterForEvent("SIEB", EVENT_EXPERIENCE_GAIN, SIEB.OnExperienceGain)
-	EVENT_MANAGER:RegisterForEvent("SIEB", EVENT_VETERAN_POINTS_GAIN, SIEB.OnExperienceGain)
+	EVENT_MANAGER:RegisterForEvent("SIEB", EVENT_CHAMPION_POINTS_GAIN, SIEB.OnExperienceGain)
 	
 end
 
-function SIEB.UpdateInteractiveScene()
-
-	if SIEB.vars.showDuringDialog then
-		SCENE_MANAGER:GetScene("interact"):AddFragment(PLAYER_PROGRESS_BAR_FRAGMENT)
-		SCENE_MANAGER:GetScene("interact"):AddFragment(PLAYER_PROGRESS_BAR_CURRENT_FRAGMENT)
-	else
-		SCENE_MANAGER:GetScene("interact"):RemoveFragment(PLAYER_PROGRESS_BAR_FRAGMENT)
-		SCENE_MANAGER:GetScene("interact"):RemoveFragment(PLAYER_PROGRESS_BAR_CURRENT_FRAGMENT)
-	end
-
-end
-
-function SIEB.ExperienceBarOnUpdate()
-
-	-- Use the OnUpdate event to make sure the alpha value is correct. The alpha
-	-- value cannot be set during the OnShow event.
-	ZO_PlayerProgressBar:SetAlpha(SIEB.vars.minimumAlpha)
-
-end
-
-function SIEB.OnExperienceGain(eventCode, reason, level, prevExp, curExp)
-
-	-- Ignore the incoming values since the player can still gain experience points
-	-- after they hit level 50. Instead, use the event as "some exp/vet point change
-	-- happened" and update the label with the value the player wants to see.
-	SIEB.RefreshLabel()
-	SIEB.FlashGain()
-
-end
-
--- Callback for the experience update event
-function SIEB.OnExperienceUpdate(eventCode, unitTag, currentExp, maxExp, reason)
-
-	if unitTag ~= "player" then return end
-
-	-- Ignore the incoming values since the player can still gain experience points
-	-- after they hit level 50. Instead, use the event as "some exp/vet point change happened"
-	-- and update the label with the value the player wants to see.
-
-	SIEB.RefreshLabel()
-	SIEB.FlashGain()
-
-end
-
--- Manual refresh of the label values
-function SIEB.RefreshLabel()
-
-  -- Hide the experience numbers for players that are max veteran rank
-  if GetUnitVeteranRank("player") >= SIEB.veteranRankMax then
-  	SIEB.experienceLabel:SetText("")
-  else
-  	SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
-  end
-
-  if SIEB.championLabel then
-		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
-	end
-
-end
-
--- Flash the amount of xp just gained below the bar
-function SIEB.FlashGain()
-
-	local diff = SIEB.GetPlayerXP() - SIEB.lastXPValue
-	if diff ~= 0 and SIEB.vars.flashGainDuration ~= 0 then
-		local direction = ""
-		if diff > 0 then direction = "+" end
-		SIEB.flashLabel:SetText(direction..diff)
-		SIEB.flashLabel:SetAlpha(1.0)
-		SIEB.lastXPValue = SIEB.GetPlayerXP()
-		SIEB.flashAnimation:Play()
-	end
-
-end
-
--- Create the label string based on user preferences
-function SIEB.FormatLabelText(current, max)
-
-	local percent = 0
-	if max > 0 then
-		percent = math.floor((current/max) * 100)
-	else
-		max = "MAX"
-	end
-
-	local str = ""
-	
-	-- Shorten the veteran exp display so it fits on the same line
-	if IsUnitVeteran("player") and SIEB.vars.showExpAsVeteran == false and SIEB.vars.showLabelBelow == false then
-		current = math.ceil(current / 1000) .. "k"
-		max = math.ceil(max / 1000) .. "k"
-	end
-
-	-- Append the "current/maximum" text if configured
-	if SIEB.vars.showCurrentMaxText then
-		str = str .. current .. " / " .. max
-	end
-
-	-- Append the percentage text if configured
-	if SIEB.vars.showPercentageText then
-		if SIEB.vars.showCurrentMaxText then
-			str = str .. "  "
-		end
-		str = str .. percent .. "%"
-	end
-
-	return str
-
-end
 
 -- Register for the init handler (needs to be declaired after the SIEB.Initialize function)
 EVENT_MANAGER:RegisterForEvent("SIEB", EVENT_ADD_ON_LOADED, SIEB.Initialize)
