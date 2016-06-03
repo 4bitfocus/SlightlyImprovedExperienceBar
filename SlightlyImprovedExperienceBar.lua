@@ -5,7 +5,9 @@ SIEB.name = "SlightlyImprovedExperienceBar"
 SIEB.version = "2.19"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
+-- hmm, noone actually uses this one...
 SIEB.championPointsMax = 360000
+
 SIEB.defaults = {
 	minimumAlpha = 0.8,
 	showPercentageText = true,
@@ -39,7 +41,7 @@ function SIEB.CreateConfiguration()
 		type = "panel",
 		name = "Experience Bar",
 		displayName = "Slightly Improved Experience Bar",
-		author = "L8Knight+Shadowfen",
+		author = "L8Knight",
 		version = SIEB.version,
 		registerForDefaults = true,
 	}
@@ -132,17 +134,11 @@ end
 function SIEB.GetPlayerXPMax()
 
 	if IsUnitChampion("player") and SIEB.vars.showExpAsChampion == false then
-		return GetNumChampionXPInChampionPoint(GetUnitChampionPoints("player"))
+		return GetNumChampionXPInChampionPoint(GetUnitChampionPoints("player")+1)
 	else
 		return GetUnitXPMax("player")
 	end
 
-end
-
-function SIEB.GetPlayerChampionXPMax()
-
-	return GetNumChampionXPInChampionPoint(GetChampionPointsPlayerProgressionCap("player"))
-	
 end
 
 function SIEB.SetLabelPosition()
@@ -214,7 +210,7 @@ function SIEB.RefreshLabel()
     end
 
     if SIEB.championLabel then
-        SIEB.championLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerChampionXPMax()))
+        SIEB.championLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
 	end
 
 end
