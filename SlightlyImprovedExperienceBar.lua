@@ -162,10 +162,15 @@ function SIEB.SetLabelPosition()
 		SIEB.championLabel = SIEB.NewBarLabel("SIEB_ChampionBarLabel", ZO_PlayerProgressBar, TEXT_ALIGN_RIGHT)
 	end
 
-  if SIEB.championLabel then
-    SIEB.championLabel:ClearAnchors()
-    SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, 25)
-  end
+	if SIEB.championLabel then
+		if SIEB.vars.showLabelBelow then
+			SIEB.championLabel:ClearAnchors()
+			SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, 25)
+		else
+			SIEB.championLabel:ClearAnchors()
+			SIEB.championLabel:SetAnchor(RIGHT, ZO_PlayerProgressBarBar, RIGHT, -10, -25)
+		end
+	end
 
 end
 
@@ -202,8 +207,8 @@ end
 -- Manual refresh of the label values
 function SIEB.RefreshLabel()
 
-    -- Hide the experience numbers for players that are max Champion rank
-    if GetUnitChampionPoints("player") >= GetChampionPointsPlayerProgressionCap() then
+    -- Hide the experience numbers for players that are max champion rank
+    if GetPlayerChampionPointsEarned() >= GetChampionPointsPlayerProgressionCap() then
         SIEB.experienceLabel:SetText("")
     else
         SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
