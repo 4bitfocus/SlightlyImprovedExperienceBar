@@ -2,7 +2,7 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.19"
+SIEB.version = "2.20"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 SIEB.championPointsMax = 360000
@@ -132,7 +132,11 @@ end
 function SIEB.GetPlayerXPMax()
 
 	if IsUnitChampion("player") and SIEB.vars.showExpAsChampion == false then
-		return SIEB.GetPlayerChampionXPMax()
+		local cp = GetUnitChampionPoints("player")
+		if cp < GetChampionPointsPlayerProgressionCap() then
+			cp = GetChampionPointsPlayerProgressionCap()
+		end
+		return GetNumChampionXPInChampionPoint(cp)
 	else
 		return GetUnitXPMax("player")
 	end
@@ -220,6 +224,8 @@ function SIEB.RefreshLabel()
 
     if SIEB.championLabel then
         SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
+	else
+		SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
 	end
 
 end
