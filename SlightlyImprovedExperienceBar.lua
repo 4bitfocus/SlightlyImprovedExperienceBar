@@ -2,7 +2,7 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.19"
+SIEB.version = "2.20"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 -- hmm, noone actually uses this one...
@@ -211,10 +211,17 @@ end
 -- Manual refresh of the label values
 function SIEB.RefreshLabel()
 
-    if SIEB.championLabel then
-        SIEB.championLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
-    else
-        SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+	-- Hide the experience numbers for players that are max champion rank
+	if GetPlayerChampionPointsEarned() >= GetChampionPointsPlayerProgressionCap() then
+		SIEB.experienceLabel:SetText("")
+	else
+		SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
+	end
+
+	if SIEB.championLabel then
+		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
+	else
+		SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
 	end
 
 end
