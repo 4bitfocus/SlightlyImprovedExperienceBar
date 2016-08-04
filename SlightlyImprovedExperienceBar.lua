@@ -211,15 +211,8 @@ end
 -- Manual refresh of the label values
 function SIEB.RefreshLabel()
 
-	-- Hide the experience numbers for players that are max champion rank
-	if GetPlayerChampionPointsEarned() >= GetChampionPointsPlayerProgressionCap() then
-		SIEB.experienceLabel:SetText("")
-	else
-		SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
-	end
-
 	if SIEB.championLabel then
-		SIEB.championLabel:SetText(SIEB.FormatLabelText(GetPlayerChampionXP(), SIEB.GetPlayerChampionXPMax()))
+		SIEB.championLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
 	else
 		SIEB.experienceLabel:SetText(SIEB.FormatLabelText(SIEB.GetPlayerXP(), SIEB.GetPlayerXPMax()))
 	end
