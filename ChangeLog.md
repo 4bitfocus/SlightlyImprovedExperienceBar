@@ -1,5 +1,9 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.20
+* Updated the API version number
+* Updated LibAddonMenu to version 2.0 r21
+
 ## Version 2.19
 * Converted from Veteran Ranks to Champion Points
 * Fixed label position option for xp text so that it can optionally show below the bar
