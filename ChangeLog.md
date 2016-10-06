@@ -1,5 +1,9 @@
 # Slightly Improved Experience Bar Changelog
 
+## Version 2.21
+* Fixed an issue with RefreshLabel
+* Updated LibAddonMenu to version 2.0 r21 (again)
+
 ## Version 2.20
 * Updated the API version number
 * Updated LibAddonMenu to version 2.0 r21
