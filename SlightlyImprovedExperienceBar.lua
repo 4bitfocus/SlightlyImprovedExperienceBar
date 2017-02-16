@@ -2,7 +2,7 @@
 SIEB = {}
 
 SIEB.name = "SlightlyImprovedExperienceBar"
-SIEB.version = "2.21"
+SIEB.version = "2.22"
 SIEB.ignoreOnHideEvent = false
 SIEB.configVersion = 5
 -- hmm, noone actually uses this one...
