@@ -1,6 +1,6 @@
 ## Title: Slightly Improved Experience Bar
 ## Description: Adds numerical values to the experience bar and prevents it from auto hiding.
-## APIVersion: 100018
+## APIVersion: 100019
 ## OptionalDependsOn: LibAddonMenu-2.0 LibAnimation-1.0 Azurah
 ## Author: L8Knight
 ## Contributors: Arthmoor
