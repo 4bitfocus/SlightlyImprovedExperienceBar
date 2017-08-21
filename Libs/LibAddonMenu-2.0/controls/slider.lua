@@ -13,12 +13,13 @@
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- default value or function that returns the default value (optional)
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 10
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -96,7 +97,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     local maxValue = sliderData.max
     slider:SetMinMax(minValue, maxValue)
     slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
-    slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseExit(control) end)
+    slider:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
     slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
     local bg = slider.bg
@@ -161,7 +162,9 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control:UpdateValue(false, value)
     end)
     slidervalue:SetHandler("OnTextChanged", function(self)
-        local value = tonumber(self:GetText())
+        local input = self:GetText()
+        if(#input > 1 and not input:sub(-1):match("[0-9]")) then return end
+        local value = tonumber(input)
         if(value) then
             HandleValueChanged(value)
         end
@@ -182,14 +185,16 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control:UpdateValue(false, value)
     end)
     slider:SetHandler("OnMouseWheel", function(self, value)
+        if(not self:GetEnabled()) then return end
         local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
         control:UpdateValue(false, new_value)
     end)
 
-    if sliderData.warning then
+    if sliderData.warning ~= nil or sliderData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(sliderData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateValue = UpdateValue
@@ -201,6 +206,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end

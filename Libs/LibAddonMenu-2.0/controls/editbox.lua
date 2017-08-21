@@ -8,13 +8,14 @@
     isExtraWide = true, --boolean (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.text, -- default value or function that returns the default value (optional)
     reference = "MyAddonEditbox" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -130,14 +131,15 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     editbox:SetAnchor(TOPLEFT, container, TOPLEFT, 2, 2)
     editbox:SetAnchor(BOTTOMRIGHT, container, BOTTOMRIGHT, -2, -2)
 
-    if editboxData.warning then
+    if editboxData.warning ~= nil or editboxData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         if editboxData.isExtraWide then
             control.warning:SetAnchor(BOTTOMRIGHT, control.bg, TOPRIGHT, 2, 0)
         else
             control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
         end
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(editboxData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateValue = UpdateValue
@@ -148,6 +150,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end
